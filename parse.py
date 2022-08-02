@@ -35,7 +35,7 @@ mypage = """
 
 <p class="story">...</p>
 
-<div class="first-div">
+<div class="first-iv">
     first div content
 </div>
 
@@ -54,7 +54,7 @@ mypage = """
 </html>
 
 """
-
+print(len(mypage))
 
 class Page:
     def __init__(self, url1):
@@ -82,16 +82,31 @@ def find_all(page, tagName):
 
 
         if insideTag:
+            openedTagsCounter = 0
             tagContent = ''
             closeTag = f'</{tagName}>'
-            while closeTag not in page[index: index + len(closeTag)] :
-                tagContent += page[index]
+            while index < len(page) - 1 and \
+                    (
+                            closeTag not in page[index: index + len(closeTag)] or\
+                            closeTag in page[index: index + len(closeTag)] and openedTagsCounter != 0
+                    ):
+
+                char = page[index]
+                char2 = page[index + 1]
+                if char == '<' and char2 != '/':
+                    openedTagsCounter += 1
+                if char == '<' and char2 == '/':
+                    openedTagsCounter -= 1
+                tagContent += char
                 index += 1
-            print(f'---------------------------')
+            print(f'closeTag внутри -> ({page[index: index + len(closeTag)]})')
+            index += len(closeTag)
+            print(f'-- Содержимое ниже ------------------------- index={index}')
             print(f'{tagContent}')
-            print(f'---------------------------')
+            print(f'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 
 
 find_all(mypage, 'div')
 
-
+# st = '0123456789012'
+# print(st[0:7])
