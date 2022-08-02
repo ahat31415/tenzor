@@ -1,0 +1,29 @@
+C:\Users\User\Desktop\Main-folder\PR\tenzor\env-tenzor\Scripts\python.exe
+C:/Users/User/Desktop/Main-folder/PR/tenzor/parse.py
+
+789
+div class="first-iv"
+closeTag внутри -> (</div>)
+-- Содержимое ниже ------------------------- index=593
+
+    first div content
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+div
+closeTag внутри -> (</div>)
+-- Содержимое ниже ------------------------- index=678
+
+    checkmogush rayon
+    <div>additional text</div>
+    <p>p text</p>
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+div class="blocks"
+closeTag внутри -> (</div>)
+-- Содержимое ниже ------------------------- index=770
+
+    <div>first</div>
+    <div>second</div>
+    <div>third</div>
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

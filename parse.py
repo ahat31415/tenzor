@@ -1,19 +1,6 @@
-# import re
-#
-# txt =  "Sylvie is 20 years old."
-#
-# # Регулярное выражение для извлечения чисел из строки <div*.class="*\w">
-# age = re.findall(r'<a*\wid="link\d">*\w</a>', page)
-#
-# print(age)
 import requests
 
-url = 'https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm'
-url = 'https://lenta.ru/news/2022/08/01/monkeypox/'
-
-mypage2 = requests.get(url).text
-# print(page)
-mypage = """
+local_page = """
 <html>
 <head>
     <title>The Dormouse's story</title>
@@ -33,7 +20,7 @@ mypage = """
     and they lived at the bottom of a well.
 </p>
 
-<p class="story">...</p>
+<p class="story">.div.p.</p>
 
 <div class="first-iv">
     first div content
@@ -42,7 +29,7 @@ mypage = """
 <div>
     checkmogush rayon
     <div>additional text</div>
-    <p>p text</p>
+    <p>Кое какой текстик здесь</p>
 </div>
 <div class="blocks">
     <div>first</div>
@@ -54,59 +41,72 @@ mypage = """
 </html>
 
 """
-print(len(mypage))
+
 
 class Page:
-    def __init__(self, url1):
-        self.url = url1
 
+    def __init__(self, url_, tag_name):
+        # self.page = requests.get(url_).text
+        self.page = local_page
+        self.tag_name = tag_name
 
-def find_all(page, tagName):
-    index = 0
-    while index < len(page):
-        insideTag = False
-        if page[index] == '<':
+    def return_inner(self, index):
+
+        opened_tags_counter = 0
+        tag_content = ''
+        close_tag = f'</{self.tag_name}>'
+        while index < len(self.page) - 1 and \
+                (
+                        close_tag not in self.page[index: index + len(close_tag)] or \
+                        close_tag in self.page[index: index + len(close_tag)] and opened_tags_counter != 0
+                ):
+
+            char = self.page[index]
+            char2 = self.page[index + 1]
+            if char == '<' and char2 != '/':
+                opened_tags_counter += 1
+            if char == '<' and char2 == '/':
+                opened_tags_counter -= 1
+            tag_content += char
             index += 1
-            substr = ''
-            while page[index] != '>':
-                substr += page[index]
+        # print(f'closeTag внутри -> ({page[index: index + len(closeTag)]})')
+        index += len(close_tag)
+        # print(f'-- Содержимое ниже ------------------------- index={index}')
+        # print(f'{tagContent}')
+        # print(f'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+        return tag_content, index
+
+    def find_all(self):
+        index = self.page.index('body')
+        result = []
+        while index < len(self.page):
+            if self.page[index] == '<':
                 index += 1
-            # now we are at the '>' symbol
-            index += 1
-            if tagName in substr:
-            # if True:
-                print(substr)
-                insideTag = True
-        else:
-            index += 1
-
-
-        if insideTag:
-            openedTagsCounter = 0
-            tagContent = ''
-            closeTag = f'</{tagName}>'
-            while index < len(page) - 1 and \
-                    (
-                            closeTag not in page[index: index + len(closeTag)] or\
-                            closeTag in page[index: index + len(closeTag)] and openedTagsCounter != 0
-                    ):
-
-                char = page[index]
-                char2 = page[index + 1]
-                if char == '<' and char2 != '/':
-                    openedTagsCounter += 1
-                if char == '<' and char2 == '/':
-                    openedTagsCounter -= 1
-                tagContent += char
+                substr = ''
+                while self.page[index] != '>':
+                    substr += self.page[index]
+                    index += 1
+                index += 1  # we are at the '>' symbol therefore +1 to the next char
+                if self.tag_name in substr.split(' '):
+                    # print(substr)
+                    tag_content, index = self.return_inner(index)
+                    result.append(tag_content)
+            else:
                 index += 1
-            print(f'closeTag внутри -> ({page[index: index + len(closeTag)]})')
-            index += len(closeTag)
-            print(f'-- Содержимое ниже ------------------------- index={index}')
-            print(f'{tagContent}')
-            print(f'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+        return result
+                
+    def execute(self):
+        for l in self.find_all():
+            line = l.strip()
+            if line != '':
+                print(line)
 
 
-find_all(mypage, 'div')
+lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'p')
+mos_lenta = Page('https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm', 'p')
+ria = Page('https://ria.ru/20220802/kulikovo_pole-1806469827.html', 'div')
+tass = Page('https://tass.ru/mezhdunarodnaya-panorama/15368327', 'p')
+local_page = Page(local_page, 'p')
 
-# st = '0123456789012'
-# print(st[0:7])
+
+local_page.execute()
