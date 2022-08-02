@@ -45,12 +45,12 @@ local_page = """
 
 class Page:
 
-    def __init__(self, url_, tag_name):
-        # self.page = requests.get(url_).text
-        self.page = local_page
+    def __init__(self, url_, tag_name: str):
+        self.page = requests.get(url_).text
+        # self.page = local_page
         self.tag_name = tag_name
 
-    def return_inner(self, index):
+    def return_inner(self, index: int):
 
         opened_tags_counter = 0
         tag_content = ''
@@ -77,7 +77,8 @@ class Page:
         return tag_content, index
 
     def find_all(self, page: str, tag_name: str = ''):
-        index = page.index('body')
+        # index = page.index('body')
+        index = 0
         result = []
         string_buffer = ''
         while index < len(page):
@@ -92,13 +93,15 @@ class Page:
                 if tag_name in current_tag:
                     # print(substr)
                     tag_content, index = self.return_inner(index)
-                    result.append(tag_content)
+                    result += self.find_all(tag_content)
                 elif tag_name == '':
                     result.append(string_buffer)
                     string_buffer = ''
             else:
                 string_buffer += page[index]
                 index += 1
+        if tag_name == '':
+            result.append(string_buffer)
         return result
 
     @staticmethod
@@ -107,7 +110,7 @@ class Page:
         return text
                 
     def execute(self):
-        for l in self.find_all():
+        for l in self.find_all(self.page, self.tag_name):
             line = l.strip()
             if line != '':
                 print(line)
@@ -117,7 +120,7 @@ lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'p')
 mos_lenta = Page('https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm', 'p')
 ria = Page('https://ria.ru/20220802/kulikovo_pole-1806469827.html', 'div')
 tass = Page('https://tass.ru/mezhdunarodnaya-panorama/15368327', 'p')
-local_page = Page(local_page, 'p')
+# local_page = Page(local_page, 'p')
 
 
-local_page.execute()
+lenta.execute()
