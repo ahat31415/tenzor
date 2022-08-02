@@ -76,24 +76,35 @@ class Page:
         # print(f'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
         return tag_content, index
 
-    def find_all(self):
-        index = self.page.index('body')
+    def find_all(self, page: str, tag_name: str = ''):
+        index = page.index('body')
         result = []
-        while index < len(self.page):
-            if self.page[index] == '<':
+        string_buffer = ''
+        while index < len(page):
+            if page[index] == '<':
                 index += 1
                 substr = ''
-                while self.page[index] != '>':
-                    substr += self.page[index]
+                while page[index] != '>':
+                    substr += page[index]
                     index += 1
                 index += 1  # we are at the '>' symbol therefore +1 to the next char
-                if self.tag_name in substr.split(' '):
+                current_tag = substr.split(' ')
+                if tag_name in current_tag:
                     # print(substr)
                     tag_content, index = self.return_inner(index)
                     result.append(tag_content)
+                elif tag_name == '':
+                    result.append(string_buffer)
+                    string_buffer = ''
             else:
+                string_buffer += page[index]
                 index += 1
         return result
+
+    @staticmethod
+    def href_handling(text):
+
+        return text
                 
     def execute(self):
         for l in self.find_all():
