@@ -17,7 +17,7 @@ local_page = """
         <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
         <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
         <a href="http://example.com/tillie" class="sister" id="link3">Tillie
-        <p class="x3">XXX</p>
+        <p class="x3">       <meta /> XXX</p>
         </a>;
     and they lived at the bottom of a well.
 </p>
@@ -88,6 +88,15 @@ class Page:
         string_buffer = ''
         while index < len(page):
             if page[index] == '<':
+                #  определяем одиночный тег -------------
+                close_tag_index = page.index('>', index)
+                _close_tag = page[close_tag_index - 1]
+                if (_close_tag == '/'):
+                    print(f'одиночный тег |{page[index: close_tag_index + 1]}|')
+                    index = close_tag_index + 1
+                    print(f'|{page[index]}|')
+                    # continue
+                # ---------------------------------------
                 index += 1
                 tag_content = ''
                 while page[index] != '>':
