@@ -5,29 +5,21 @@ local_page = """
 <head>
     <title>The Dormouse's story</title>
 </head>
-
 <body>
-
 <p class="title">
     <b>The Dormouse's story</b>
 </p>
-
-<p class="x3story">
+<p class="story">
     Once upon a time there were three little sisters; and their names were
         <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
         <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
-        <a href="http://example.com/tillie" class="sister" id="link3">Tillie
-        <p class="x3">XXX</p>
-        </a>;
+        <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
     and they lived at the bottom of a well.
 </p>
-
 <p class="story">.div.p.</p>
-
 <div class="first-iv">
     first div content
 </div>
-
 <div>
     checkmogush rayon
     <div>additional text</div>
@@ -38,20 +30,17 @@ local_page = """
     <div>second</div>
     <div>third</div>
 </div>
-
 </body>
 </html>
-
 """
 
 
 class Page:
 
-    def __init__(self, url_, tag_name: str, css_class: str = ''):
-        # self.page = requests.get(url_).text
-        self.page = local_page
+    def __init__(self, url_, tag_name: str):
+        self.page = requests.get(url_).text
+        # self.page = local_page
         self.tag_name = tag_name
-        self.css_class = css_class
 
     def return_inner(self, index: int):
 
@@ -80,31 +69,24 @@ class Page:
         return tag_content, index
 
     def find_all(self, page: str, tag_name: str = ''):
-        if tag_name == '':
-            index = 0
-        else:
-            index = page.index('body')
+        # index = page.index('body') - не работает с рекурсией
+        index = 0
         result = []
         string_buffer = ''
         while index < len(page):
             if page[index] == '<':
                 index += 1
-                tag_content = ''
+                substr = ''
                 while page[index] != '>':
-                    tag_content += page[index]
+                    substr += page[index]
                     index += 1
-                    if index >= len(page):
-                        break
-
                 index += 1  # we are at the '>' symbol therefore +1 to the next char
-                splitted_tag_content = tag_content.split(' ')
-                class_condition = self.is_class_condition(tag_content)
-                if tag_name in splitted_tag_content and tag_name != '' and class_condition:  # tag_name != '' ??
+                current_tag = substr.split(' ')
+                if tag_name in current_tag:
                     # print(substr)
-                    tag_inner_text, index = self.return_inner(index)
-                    tag_inner_text = self.href_handling(tag_inner_text)
-                    result += self.find_all(tag_inner_text)
-                    # result.append(tag_inner_text)
+                    tag_content, index = self.return_inner(index)
+                    # tag_content = self.href_handling(tag_content)
+                    result += self.find_all(tag_content)
                 elif tag_name == '':
                     result.append(string_buffer)
                     string_buffer = ''
@@ -149,17 +131,6 @@ class Page:
             print(text)
             raise Exception
 
-    def is_class_condition(self, st):
-        elems = st.split('"')
-        for index, el in enumerate(elems):
-            if 'class=' in el and index != len(elems):
-                classes = elems[index + 1].split(' ')
-                if f'{self.css_class}' in classes:
-                    print('--------------------------------------------------------------------------')
-                    print(f'classes is {classes}')
-                    return True
-        return False
-
     def execute(self):
         for l in self.find_all(self.page, self.tag_name):
             line = l.strip()
@@ -168,9 +139,8 @@ class Page:
                 print(line)
 
 
-local_page = Page(local_page, 'p', 'x3')
-lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'div', 'topic-body')
-# lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'p', 'xsdcmg topic-body _news')
+# local_page = Page(local_page, 'p')
+lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'p')
 mos_lenta = Page('https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm', 'p')
 aif = Page('https://aif.ru/sport/football/spartak_na_svoem_pole_razgromil_orenburg', 'p')
 ria = Page('https://ria.ru/20220802/kulikovo_pole-1806469827.html', 'div')
@@ -179,10 +149,4 @@ ria = Page('https://ria.ru/20220802/kulikovo_pole-1806469827.html', 'div')
 tass = Page('https://tass.ru/mezhdunarodnaya-panorama/15368327', 'p')
 
 # print(ria.page)
-local_page.execute()
-
-# a = ''
-# if a in 'asd asd asddasd' and a != '':
-#     print('1')
-# elif a == '':
-#     print('2')
+lenta.execute()
