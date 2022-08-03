@@ -77,7 +77,7 @@ class Page:
         return tag_content, index
 
     def find_all(self, page: str, tag_name: str = ''):
-        # index = page.index('body')
+        # index = page.index('body') - не работает с рекурсией
         index = 0
         result = []
         string_buffer = ''
@@ -93,6 +93,7 @@ class Page:
                 if tag_name in current_tag:
                     # print(substr)
                     tag_content, index = self.return_inner(index)
+                    # tag_content = self.href_handling(tag_content)
                     result += self.find_all(tag_content)
                 elif tag_name == '':
                     result.append(string_buffer)
@@ -104,23 +105,56 @@ class Page:
             result.append(string_buffer)
         return result
 
-    @staticmethod
-    def href_handling(text):
+    def href_handling(self, text):
+        try:
+            if '<a ' not in text:
+                return text
 
-        return text
-                
+            start = text.index('<a ', 0)
+            end = text.index('</a>', 0)
+
+            index = start + 3
+
+            a_tag_content = ''
+            while text[index] != '>':
+                a_tag_content += text[index]
+                index += 1
+            index += 1
+
+            href_index = a_tag_content.index('href="') + 6
+            href_index_end = a_tag_content.index('"', href_index)
+            href = a_tag_content[href_index:href_index_end]
+            a_text = ''
+            while index < end:
+                a_text += text[index]
+                index += 1
+            a_text += f'[{href}]'
+
+            index += 1  # we are at the '>' symbol therefore +1 to the next char
+            replace_this = text[start: end + 4]
+            fine_text = text.replace(replace_this, a_text)
+            return self.href_handling(fine_text)
+        except:
+            print('exception text')
+            print(text)
+            raise Exception
+
     def execute(self):
         for l in self.find_all(self.page, self.tag_name):
             line = l.strip()
             if line != '':
+                print('')
                 print(line)
 
 
+# local_page = Page(local_page, 'p')
 lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'p')
 mos_lenta = Page('https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm', 'p')
+aif = Page('https://aif.ru/sport/football/spartak_na_svoem_pole_razgromil_orenburg', 'p')
 ria = Page('https://ria.ru/20220802/kulikovo_pole-1806469827.html', 'div')
+
+# приходит некорректный html  -   tass
 tass = Page('https://tass.ru/mezhdunarodnaya-panorama/15368327', 'p')
-# local_page = Page(local_page, 'p')
 
-
-lenta.execute()
+# print(ria.page)
+ria.execute()

@@ -60,5 +60,48 @@ Once upon a time there were three little sisters; and their names were
         ..div.p.  Кое какой текстик здесь
         """
 
-for i in find_all(f, ''):
-    print(i.strip())
+
+# for i in find_all(f, ''):
+#     print(i.strip())
+
+def href_handling(text):
+    if '<a ' not in text:
+        return text
+
+    start = text.index('<a ', 0)
+    end = text.index('</a>', 0)
+
+    index = start + 3
+    print(f'start = {start}')
+    print(f'end = {end}')
+    print(f'text[index] = {text[index]}')
+
+    a_tag_content = ''
+    while text[index] != '>':
+        a_tag_content += text[index]
+        index += 1
+    index += 1
+
+    href_index = a_tag_content.index('href="') + 6
+    href_index_end = a_tag_content.index('"', href_index)
+    href = a_tag_content[href_index:href_index_end]
+    print(f'href = {href}')
+    a_text = ''
+    while index < end:
+        a_text += text[index]
+        index += 1
+    a_text += f'[{href}]'
+    print(f'a_text = {a_text}')
+
+    index += 1  # we are at the '>' symbol therefore +1 to the next char
+    replace_this = text[start: end + 4]
+    print(replace_this)
+    fine_text = text.replace(replace_this, a_text)
+    return href_handling(fine_text)
+
+
+ss2 = ' 1123 <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a> 123 <a class="sister" id="link1" href="http://vk.com/rwfW@fwe">Click here</a>'
+a = ''
+tutu = href_handling(ss2)
+print('tutu')
+print(tutu)
