@@ -1,25 +1,107 @@
-import requests
+def reduce_singe_tags(page):
+    single_tags = [
+        '<!doctype',
+        '<area',
+        '<base',
+        '<br',
+        '<col',
+        '<embed',
+        '<hr',
+        '<img',
+        '<input',
+        '<keygen',
+        '<link',
+        '<meta',
+        '<param',
+        '<source',
+        '<track',
+        '<wbr',
+    ]
+    # index = page.index('<body')
+    index = 0
+    temp_page = page[index: len(page)]
+    for tag in single_tags:
+        while tag in temp_page:
+            start = temp_page.index(tag)
+            print(f'start:{start}')
+            end = temp_page.index('>', start)
+            print(f'end:{end}')
+            temp_page = temp_page[0:start] + temp_page[end + 1:]
+    return temp_page
 
-local_page = """
+
+def reduce_scripts(page):
+    temp_page = page
+    while '<script' in temp_page:
+        start = temp_page.index('<script')
+        print(f'start:{start}')
+        end = temp_page.index('</script>', start) # </script>
+        print(f'end:{end}')
+        temp_page = temp_page[0:start] + temp_page[end + 10:]
+    return temp_page
+
+
+def keep_body(page):
+
+    temp_page = page
+    if '<body' in temp_page:
+        start = temp_page.index('<body')
+        end_of_body_open = temp_page.index('>', start) + 1
+        print('end_of_body_open')
+        print(end_of_body_open)
+        print(temp_page[end_of_body_open])
+        end = temp_page.index('</body>', end_of_body_open)
+        temp_page = temp_page[end_of_body_open:end]
+    return temp_page
+
+
+
+
+
+
+
+
+
+
+
+p = '<p class="x3">%<meta />% XXX</p>'
+w=  '0123456789012345678901234567890'
+p2 = """
 <html>
 <head>
+
+    <link href="title.css" rel="stylesheet" type="text/css" />
+    <link href="title.css" rel="stylesheet" type="text/css" />
+    <link href="title.css" rel="stylesheet" type="text/css" />
+    <link href="title.css" rel="stylesheet" type="text/css" />
+
     <title>The Dormouse's story</title>
 </head>
-<body>
+before body begin
+<body data-pagetype="content_1448">
+after body begin
 <p class="title">
     <b>The Dormouse's story</b>
 </p>
-<p class="story">
+
+<img src="https://top-fwz1.mail.ru/counter?id=59428;js=na" style="border:0;position:absolute;left:-9999px;" alt="Top.Mail.Ru" />
+<p class="x3story">
     Once upon a time there were three little sisters; and their names were
         <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
         <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
-        <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
+        <a href="http://example.com/tillie" class="sister" id="link3">Tillie
+        <p class="x3">       <meta /> XXX</p>
+        </a>;
     and they lived at the bottom of a well.
 </p>
+
 <p class="story">.div.p.</p>
+
 <div class="first-iv">
-    first div content
+    first div content 
+<img src="https://top-fwz1.mail.ru/counter?id=59428;js=na" style="border:0;position:absolute;left:-9999px;" alt="Top.Mail.Ru" />
 </div>
+
 <div>
     checkmogush rayon
     <div>additional text</div>
@@ -30,123 +112,22 @@ local_page = """
     <div>second</div>
     <div>third</div>
 </div>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+before body end
 </body>
+afterbodyend
+1-----
+<script>
+><><><><><><>////><><?<//>
+</script>
+2-----
 </html>
+
 """
+page = keep_body(p2)
+# page = reduce_scripts(page)
+# page = reduce_singe_tags(page)
 
-
-class Page:
-
-    def __init__(self, url_, tag_name: str):
-        self.page = requests.get(url_).text
-        # self.page = local_page
-        self.tag_name = tag_name
-
-    def return_inner(self, index: int):
-
-        opened_tags_counter = 0
-        tag_content = ''
-        close_tag = f'</{self.tag_name}>'
-        while index < len(self.page) - 1 and \
-                (
-                        close_tag not in self.page[index: index + len(close_tag)] or \
-                        close_tag in self.page[index: index + len(close_tag)] and opened_tags_counter != 0
-                ):
-
-            char = self.page[index]
-            char2 = self.page[index + 1]
-            if char == '<' and char2 != '/':
-                opened_tags_counter += 1
-            if char == '<' and char2 == '/':
-                opened_tags_counter -= 1
-            tag_content += char
-            index += 1
-        # print(f'closeTag внутри -> ({page[index: index + len(closeTag)]})')
-        index += len(close_tag)
-        # print(f'-- Содержимое ниже ------------------------- index={index}')
-        # print(f'{tagContent}')
-        # print(f'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-        return tag_content, index
-
-    def find_all(self, page: str, tag_name: str = ''):
-        # index = page.index('body') - не работает с рекурсией
-        index = 0
-        result = []
-        string_buffer = ''
-        while index < len(page):
-            if page[index] == '<':
-                index += 1
-                substr = ''
-                while page[index] != '>':
-                    substr += page[index]
-                    index += 1
-                index += 1  # we are at the '>' symbol therefore +1 to the next char
-                current_tag = substr.split(' ')
-                if tag_name in current_tag:
-                    # print(substr)
-                    tag_content, index = self.return_inner(index)
-                    # tag_content = self.href_handling(tag_content)
-                    result += self.find_all(tag_content)
-                elif tag_name == '':
-                    result.append(string_buffer)
-                    string_buffer = ''
-            else:
-                string_buffer += page[index]
-                index += 1
-        if tag_name == '':
-            result.append(string_buffer)
-        return result
-
-    def href_handling(self, text):
-        try:
-            if '<a ' not in text:
-                return text
-
-            start = text.index('<a ', 0)
-            end = text.index('</a>', 0)
-
-            index = start + 3
-
-            a_tag_content = ''
-            while text[index] != '>':
-                a_tag_content += text[index]
-                index += 1
-            index += 1
-
-            href_index = a_tag_content.index('href="') + 6
-            href_index_end = a_tag_content.index('"', href_index)
-            href = a_tag_content[href_index:href_index_end]
-            a_text = ''
-            while index < end:
-                a_text += text[index]
-                index += 1
-            a_text += f'[{href}]'
-
-            index += 1  # we are at the '>' symbol therefore +1 to the next char
-            replace_this = text[start: end + 4]
-            fine_text = text.replace(replace_this, a_text)
-            return self.href_handling(fine_text)
-        except:
-            print('exception text')
-            print(text)
-            raise Exception
-
-    def execute(self):
-        for l in self.find_all(self.page, self.tag_name):
-            line = l.strip()
-            if line != '':
-                print('')
-                print(line)
-
-
-# local_page = Page(local_page, 'p')
-lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'p')
-mos_lenta = Page('https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm', 'p')
-aif = Page('https://aif.ru/sport/football/spartak_na_svoem_pole_razgromil_orenburg', 'p')
-ria = Page('https://ria.ru/20220802/kulikovo_pole-1806469827.html', 'div')
-
-# приходит некорректный html  -   tass
-tass = Page('https://tass.ru/mezhdunarodnaya-panorama/15368327', 'p')
-
-# print(ria.page)
-lenta.execute()
+print(page)
