@@ -1,7 +1,6 @@
 https://lenta.ru/news/2022/08/01/monkeypox/
 div
-topic-body
-
+topic-body__content
 
 https://ria.ru/20220802/kulikovo_pole-1806469827.html
 div
@@ -12,15 +11,16 @@ p
 
 https://tass.ru/ekonomika/15392023
 https://tass.ru/mezhdunarodnaya-panorama/15368327
+https://tass.ru/ekonomika/15395389
 p
 
-// пустоты
+
 https://aif.ru/sport/football/spartak_na_svoem_pole_razgromil_orenburg
 div
 article_content
 
 https://moslenta.ru/news/lyudi/renata-litvinova-31-07-2022.htm
-https://moslenta.ru/news/lyudi/simptom
+https://moslenta.ru/news/lyudi/simptomatika-01-08-2022.htm
 https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm
 div
 _39FNd9SD

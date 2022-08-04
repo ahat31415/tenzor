@@ -25,9 +25,9 @@ def main(url):
     except:
         pass
     Page(url, tag_name, css_class).execute()
-    print(f'$${url}$$')
-    print(f'$${tag_name}$$')
-    print(f'$${css_class}$$')
+    # print(f'$${url}$$')
+    # print(f'$${tag_name}$$')
+    # print(f'$${css_class}$$')
     pass
 
 
