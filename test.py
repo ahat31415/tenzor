@@ -1,44 +1,24 @@
-def find_all(page: str, tag_name: str = ''):
-    # index = page.index('body')
-    index = 0
-    result = []
-    string_buffer = ''
-    while index < len(page):
-        if page[index] == '<':
-            index += 1
-            substr = ''
-            while page[index] != '>':
-                substr += page[index]
-                index += 1
-            index += 1  # we are at the '>' symbol therefore +1 to the next char
-            current_tag = substr.split(' ')
-            if tag_name in current_tag:
-                # print(substr)
-                tag_content = page
-                result += find_all(tag_content)
-            elif tag_name == '':
-                result.append(string_buffer)
-                string_buffer = ''
-        else:
-            string_buffer += page[index]
-            index += 1
-    if tag_name == '':
-        result.append(string_buffer)
+from parse import Page
 
-    return result
+local_page22 = """
+<html>
+<head>
+    <title>The Dormouse's story</title>
+</head>
 
-
-page = """
+<body>
 
 <p class="title">
     <b>The Dormouse's story</b>
 </p>
 
-<p class="story">
+<p class="x3story">
     Once upon a time there were three little sisters; and their names were
         <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
         <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
-        <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
+        <a href="http://example.com/tillie" class="sister" id="link3">Tillie
+        <p class="x3">       <meta /> XXX</p>
+        </a>;
     and they lived at the bottom of a well.
 </p>
 
@@ -46,62 +26,40 @@ page = """
 
 <div class="first-iv">
     first div content
-</div>"""
+</div>
 
-f = """
-<b class="abcd">The Dormouse\'s story</b>
-Once upon a time there were three little sisters; and their names were 
-       <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a> 
-        ,fdasdfasf  
-        <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and  
-        <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>
-        dgdfghdfghdfghhfg    
-        and they lived at the bottom of a well
-        ..div.p.  Кое какой текстик здесь
-        """
+<div>
+    checkmogush rayon
+    <div>additional text</div>
+    <p>Кое какой текстик здесь</p>
+</div>
+<div class="blocks">
+    <div>first</div>
+    <div>second</div>
+    <div>third</div>
+</div>
 
+</body>
+</html>
 
-# for i in find_all(f, ''):
-#     print(i.strip())
-
-def href_handling(text):
-    if '<a ' not in text:
-        return text
-
-    start = text.index('<a ', 0)
-    end = text.index('</a>', 0)
-
-    index = start + 3
-    print(f'start = {start}')
-    print(f'end = {end}')
-    print(f'text[index] = {text[index]}')
-
-    a_tag_content = ''
-    while text[index] != '>':
-        a_tag_content += text[index]
-        index += 1
-    index += 1
-
-    href_index = a_tag_content.index('href="') + 6
-    href_index_end = a_tag_content.index('"', href_index)
-    href = a_tag_content[href_index:href_index_end]
-    print(f'href = {href}')
-    a_text = ''
-    while index < end:
-        a_text += text[index]
-        index += 1
-    a_text += f'[{href}]'
-    print(f'a_text = {a_text}')
-
-    index += 1  # we are at the '>' symbol therefore +1 to the next char
-    replace_this = text[start: end + 4]
-    print(replace_this)
-    fine_text = text.replace(replace_this, a_text)
-    return href_handling(fine_text)
+"""
 
 
-ss2 = ' 1123 <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a> 123 <a class="sister" id="link1" href="http://vk.com/rwfW@fwe">Click here</a>'
-a = ''
-tutu = href_handling(ss2)
-print('tutu')
-print(tutu)
+lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'div', 'topic-body')
+mos_lenta = Page('https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm', 'div', '_39FNd9SD')
+interfax = Page('https://www.interfax.ru/russia/855185', 'p', '')
+aif = Page('https://aif.ru/sport/football/spartak_na_svoem_pole_razgromil_orenburg', 'section', 'article')
+ria = Page('https://ria.ru/20220802/kulikovo_pole-1806469827.html', 'div', 'article__text')
+
+# приходит некорректный html  -   tass
+tass = Page('https://tass.ru/mezhdunarodnaya-panorama/15368327', 'p')
+tass.execute()
+
+
+f = interfax.reduce_comments(interfax.page)
+f = interfax.keep_body(f)
+f = interfax.reduce_certain_tags(f, 'script')
+f = interfax.reduce_certain_tags(f, 'style')
+f = interfax.reduce_singe_tags(f)
+# print(f)
+

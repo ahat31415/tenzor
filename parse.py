@@ -1,57 +1,20 @@
+import os
 import requests
-
-# local_page22 = """
-# <html>
-# <head>
-#     <title>The Dormouse's story</title>
-# </head>
-#
-# <body>
-#
-# <p class="title">
-#     <b>The Dormouse's story</b>
-# </p>
-#
-# <p class="x3story">
-#     Once upon a time there were three little sisters; and their names were
-#         <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
-#         <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
-#         <a href="http://example.com/tillie" class="sister" id="link3">Tillie
-#         <p class="x3">       <meta /> XXX</p>
-#         </a>;
-#     and they lived at the bottom of a well.
-# </p>
-#
-# <p class="story">.div.p.</p>
-#
-# <div class="first-iv">
-#     first div content
-# </div>
-#
-# <div>
-#     checkmogush rayon
-#     <div>additional text</div>
-#     <p>Кое какой текстик здесь</p>
-# </div>
-# <div class="blocks">
-#     <div>first</div>
-#     <div>second</div>
-#     <div>third</div>
-# </div>
-#
-# </body>
-# </html>
-#
-# """
 
 
 class Page:
 
     def __init__(self, url_, tag_name: str, css_class: str = ''):
+        self.url_ = url_
         self.page = requests.get(url_).text
         # self.page = url_
         self.tag_name = tag_name
         self.css_class = css_class
+        print('constructor')
+        print(f'aa{self.url_}aa')
+        # print(self.page)
+        print(f'aa{self.tag_name}aa')
+        print(f'aa{self.css_class}aa')
 
     @staticmethod
     def reduce_singe_tags(page):
@@ -87,13 +50,14 @@ class Page:
 
     @staticmethod
     def reduce_certain_tags(page, removing_tag_name):
+        print(removing_tag_name)
         temp_page = page
         while f'<{removing_tag_name}' in temp_page:
             start = temp_page.index(f'<{removing_tag_name}')
             end = temp_page.index(f'</{removing_tag_name}>', start)  # </script>
             # print(f'start:{start}')
             # print(f'end:{end}')
-            temp_page = temp_page[0:start] + temp_page[end + 10:]
+            temp_page = temp_page[0:start] + temp_page[end + len(removing_tag_name)+3:]  # раньше было просто 10 для </script>
         return temp_page
 
     @staticmethod
@@ -101,13 +65,18 @@ class Page:
 
         temp_page = page
         if '<body' in temp_page:
-            start = temp_page.index('<body')
-            end_of_body_open = temp_page.index('>', start) + 1
-            print('end_of_body_open')
-            print(end_of_body_open)
-            print(temp_page[end_of_body_open])
-            end = temp_page.index('</body>', end_of_body_open)
-            temp_page = temp_page[end_of_body_open:end]
+            try:
+                start = temp_page.index('<body')
+                end_of_body_open = temp_page.index('>', start) + 1
+                # print('end_of_body_open')
+                # print(end_of_body_open)
+                # print(temp_page[end_of_body_open])
+                end = temp_page.index('</body>', end_of_body_open)
+                temp_page = temp_page[end_of_body_open:end]
+            except ValueError:
+                print('>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+                print('Keep body Value Error happened!')
+                return page
         return temp_page
 
     @staticmethod
@@ -251,13 +220,13 @@ class Page:
             if 'class=' in el and index < len(elems) - 1:
                 classes = elems[index + 1].split(' ')
                 if f'{self.css_class}' in classes:
-                    print('--------------------------------------------------------------------------')
-                    print(f'classes is {classes}')
+                    # print('--------------------------------------------------------------------------')
+                    # print(f'classes is {classes}')
                     return True
         return False
 
     def execute(self):
-        refined_page = interfax.reduce_comments(self.page)
+        refined_page = self.reduce_comments(self.page)
 
         refined_page = self.keep_body(refined_page)
         refined_page = self.reduce_certain_tags(refined_page, 'script')
@@ -269,41 +238,45 @@ class Page:
         # refined_page = self.keep_body(self.page)
         # refined_page = self.reduce_scripts(self.page)
         # refined_page = self.reduce_singe_tags(self.page)
+        result = self.find_all(self.page, self.tag_name)
+        slashes_index = self.url_.index('//') + 2
+        tutu = self.url_[slashes_index:].replace('.html', '')
+        cur_dir = os.getcwd().replace(':', '')
+        file_name = cur_dir + f'-{tutu}.txt'
+        file_name = file_name.replace('/', '-')
+        file_name = file_name.replace('\\', '-')
+        print(file_name)
+        file = open(file_name, 'w')
+        try:
+            for l in result:
+                line = l.strip()
+                if line != '':
+                    line = self.format_long_text(line)
+                    file.write('\n')
+                    file.write('\n')
+                    file.write(line)
+                    # print('')
+                    # print(line)
+        finally:
+            file.close()
+        print(f'Выполнено. Имя файла: {file_name}')
 
-        for l in self.find_all(self.page, self.tag_name):
-            line = l.strip()
-            if line != '':
-                print('')
-                print(line)
+    @staticmethod
+    def format_long_text(text):
+        words = text.split(' ')
+        buffer = ''
+        new_text = ''
+        for i in range(len(words)):
+            if words[i] != '':
+                next_word = f' {words[i]}'
+                buffer += next_word
+                if len(buffer) > 80:
+                    buffer += '\n'
+                    new_text += buffer
+                    buffer = ''
+        if buffer != '':
+            buffer += '\n'
+            new_text += buffer
+        return new_text
 
 
-# OK
-lenta = Page('https://lenta.ru/news/2022/08/01/monkeypox/', 'div', 'topic-body')
-# mos_lenta = Page('https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm', 'p')
-mos_lenta = Page('https://moslenta.ru/news/lyudi/formula-poleznogo-zavtraka-01-08-2022.htm', 'div', '_39FNd9SD')
-interfax = Page('https://www.interfax.ru/russia/855185', 'p', '')
-
-# NO
-aif = Page('https://aif.ru/sport/football/spartak_na_svoem_pole_razgromil_orenburg', 'section', 'article')
-ria = Page('https://ria.ru/20220802/kulikovo_pole-1806469827.html', 'div', 'layout-article__600-align')
-
-# приходит некорректный html  -   tass
-tass = Page('https://tass.ru/mezhdunarodnaya-panorama/15368327', 'p')
-
-# print(ria.page)
-new_local = """
-<body> <p id="123" class="as asd x3 dfgdfg"><meta />zxc</p></body>
-"""
-# l_page = Page(new_local, 'p', 'x3')
-ria.execute()
-f = interfax.reduce_comments(interfax.page)
-f = interfax.keep_body(f)
-f = interfax.reduce_certain_tags(f, 'script')
-f = interfax.reduce_certain_tags(f, 'style')
-f = interfax.reduce_singe_tags(f)
-# print(f)
-# a = ''
-# if a in 'asd asd asddasd' and a != '':
-#     print('1')
-# elif a == '':
-#     print('2')
